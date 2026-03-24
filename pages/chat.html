@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community · Shridev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #faf9f6; --text-primary: #2c3e50; --text-secondary: #5e6f8d; --text-soft: #8b9bb5; --accent-2: #d4e0e8; --accent-3: #f0ded2; --gradient-2: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%); --shadow-sm: 0 10px 30px -15px rgba(0,0,0,0.05); --border-radius-xl: 40px; --border-radius-lg: 32px; --font-primary: 'Plus Jakarta Sans', sans-serif; --font-secondary: 'Inter', sans-serif; }
+        body { font-family: var(--font-secondary); background: var(--bg-primary); color: var(--text-primary); }
+        .bg-soft { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(216,224,218,0.3) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(240,222,210,0.3) 0%, transparent 40%); z-index: -1; }
+        .dashboard { display: flex; min-height: 100vh; max-width: 1600px; margin: 0 auto; padding: 20px; gap: 24px; }
+        .sidebar { width: 280px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 24px 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.5); height: calc(100vh - 40px); position: sticky; top: 20px; }
+        .sidebar-header { padding: 8px 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo i { font-size: 32px; color: var(--text-primary); }
+        .logo span { font-family: var(--font-primary); font-size: 24px; font-weight: 700; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; border-radius: var(--border-radius-lg); color: var(--text-secondary); text-decoration: none; gap: 12px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+        .nav-item i { width: 24px; font-size: 1.2rem; color: var(--text-soft); }
+        .nav-item:hover { background: rgba(255,255,255,0.8); color: var(--text-primary); transform: translateX(5px); }
+        .nav-item.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+        .badge { background: var(--accent-3); padding: 4px 8px; border-radius: 30px; font-size: 11px; font-weight: 600; margin-left: auto; }
+        .main-content { flex: 1; }
+        .header { background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.5); }
+        .search { position: relative; width: 300px; }
+        .search i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-soft); }
+        .search input { width: 100%; padding: 12px 16px 12px 45px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 40px; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .notification { position: relative; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.5); border-radius: 50%; }
+        .notification .badge { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 6px; background: #ef4444; color: white; }
+        .user { display: flex; align-items: center; gap: 12px; padding: 6px 12px 6px 6px; background: rgba(255,255,255,0.5); border-radius: 40px; cursor: pointer; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; }
+        .user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .chat-container { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); overflow: hidden; display: flex; height: calc(100vh - 180px); }
+        .channels { width: 260px; background: rgba(255,255,255,0.3); border-right: 1px solid rgba(0,0,0,0.05); overflow-y: auto; }
+        .channel { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; border-radius: 12px; margin: 4px 8px; }
+        .channel:hover { background: rgba(255,255,255,0.5); }
+        .channel.active { background: white; box-shadow: var(--shadow-sm); }
+        .chat-area { flex: 1; display: flex; flex-direction: column; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .message { display: flex; gap: 12px; animation: fadeIn 0.3s ease; }
+        .message.hidden-msg { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.sent { justify-content: flex-end; }
+        .message.received { justify-content: flex-start; }
+        .message-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--gradient-2); display: flex; align-items: center; justify-content: center; }
+        .message-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .message-content { background: white; padding: 12px 18px; border-radius: 20px; max-width: 70%; box-shadow: var(--shadow-sm); }
+        .message.sent .message-content { background: var(--gradient-2); color: var(--text-primary); }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.8rem; flex-wrap: wrap; }
+        .message-author { font-weight: 600; color: var(--text-primary); }
+        .message-time { font-size: 0.7rem; color: var(--text-soft); }
+        .message-text { word-wrap: break-word; line-height: 1.4; font-size: 0.95rem; }
+        .loading-state { text-align: center; padding: 40px; color: var(--text-soft); }
+        .empty-state { text-align: center; color: var(--text-soft); padding: 40px; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .typing-indicator { padding: 12px 20px; font-size: 0.8rem; color: var(--text-soft); display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); }
+        .typing-dots { display: flex; gap: 3px; }
+        .typing-dots span { width: 6px; height: 6px; background: var(--text-soft); border-radius: 50%; animation: typing 1.4s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+        .chat-input { padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; gap: 12px; background: white; }
+        .chat-input input { flex: 1; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 30px; font-family: var(--font-secondary); font-size: 0.95rem; outline: none; }
+        .chat-input input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 2px rgba(212,224,232,0.5); }
+        .chat-input button { padding: 12px 28px; background: var(--gradient-2); border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .chat-input button:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .mobile-menu-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        @media (max-width: 992px) { .sidebar { position: fixed; left: -280px; z-index: 1000; } .sidebar.active { left: 16px; } .mobile-menu-btn { display: flex; } .channels { display: none; } }
+        @media (max-width: 768px) { .header { flex-direction: column; } .search { width: 100%; } .message-content { max-width: 85%; } }
+    </style>
+</head>
+<body>
+    <div class="bg-soft"></div>
+    <button class="mobile-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+    <div class="dashboard">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo" onclick="window.location.href='dashboard.html'"><i class="fas fa-gem"></i><span>Shridev<small>·hub</small></span></div></div>
+            <nav class="sidebar-nav">
+                <div class="nav-item" onclick="window.location.href='dashboard.html'"><i class="fas fa-home"></i><span>Dashboard</span></div>
+                <div class="nav-item" onclick="window.location.href='subjects.html'"><i class="fas fa-book-open"></i><span>Subjects</span></div>
+                <div class="nav-item" onclick="window.location.href='quiz-generator.html'"><i class="fas fa-robot"></i><span>AI Quiz</span></div>
+                <div class="nav-item" onclick="window.location.href='mock-test.html'"><i class="fas fa-clock"></i><span>Mock Tests</span></div>
+                <div class="nav-item active"><i class="fas fa-comments"></i><span>Community</span><span class="badge" id="onlineCountBadge">0</span></div>
+                <div class="nav-item" onclick="window.location.href='leaderboard.html'"><i class="fas fa-trophy"></i><span>Leaderboard</span></div>
+                <div class="nav-item" onclick="window.location.href='study-planner.html'"><i class="fas fa-calendar-alt"></i><span>Study Planner</span></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="search"><i class="fas fa-search"></i><input type="text" id="searchMessages" placeholder="Search messages..."></div>
+                <div class="header-actions">
+                    <div class="notification" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notificationBadge">0</span>
+                    </div>
+                    <div class="user" onclick="window.location.href='profile.html'">
+                        <div class="user-avatar"><img id="userAvatar" src="" alt=""></div>
+                        <span class="user-name" id="userName"></span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="chat-container">
+                <div class="channels" id="channelsList">
+                    <div class="channel active" data-channel="general"><i class="fas fa-hashtag"></i><span>general</span></div>
+                    <div class="channel" data-channel="data-structures"><i class="fas fa-code"></i><span>data-structures</span></div>
+                    <div class="channel" data-channel="operating-systems"><i class="fas fa-microchip"></i><span>operating-systems</span></div>
+                    <div class="channel" data-channel="networks"><i class="fas fa-network-wired"></i><span>networks</span></div>
+                </div>
+                <div class="chat-area">
+                    <div class="messages" id="messages">
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <p>No messages yet. Be the first to say something! 💬</p>
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                        <span>Someone is typing</span>
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
+                        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5002'; // Change to your port
+        let socket = null;
+        let currentUser = null;
+        let currentChannel = 'general';
+        let typingTimeout = null;
+        let unreadCounts = { general: 0, 'data-structures': 0, 'operating-systems': 0, networks: 0 };
+        
+        // Get current user
+        try {
+            const userData = localStorage.getItem('shridev_user') || sessionStorage.getItem('shridev_user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+            }
+        } catch(e) { 
+            console.error('Error parsing user:', e);
+            currentUser = null;
+        }
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        // Update UI with user info
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userAvatar').src = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=d4e0e8&color=2c3e50&bold=true`;
+        
+        // Get avatar URL with fallback
+        function getAvatarUrl(avatar, username) {
+            return avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=d4e0e8&color=2c3e50&bold=true`;
+        }
+        
+        // Update notification badge (SAFE VERSION)
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            let totalUnread = 0;
+            for (let channel in unreadCounts) {
+                if (channel !== currentChannel) {
+                    totalUnread += unreadCounts[channel];
+                }
+            }
+            if (totalUnread > 0) {
+                badge.textContent = totalUnread;
+                badge.style.display = 'flex';
+            } else {
+                badge.textContent = '0';
+                badge.style.display = 'none';
+            }
+        }
+        
+        // Increment unread count for a channel
+        function incrementUnreadCount(channel) {
+            if (channel !== currentChannel) {
+                unreadCounts[channel] = (unreadCounts[channel] || 0) + 1;
+                updateNotificationBadge();
+            }
+        }
+        
+        // Reset unread count for current channel
+        function resetUnreadCount() {
+            if (unreadCounts[currentChannel]) {
+                unreadCounts[currentChannel] = 0;
+                updateNotificationBadge();
+            }
+        }
+        
+        // Show loading state
+        function showLoadingState() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>';
+        }
+        
+        // Show empty state
+        function showEmptyState() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <p>No messages yet. Be the first to say something! 💬</p>
+                </div>
+            `;
+        }
+        
+        // Add message to chat (with proper avatar fallback)
+        function addMessageToChat(message, isOwn) {
+            const messagesDiv = document.getElementById('messages');
+            const time = new Date(message.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const avatarUrl = getAvatarUrl(message.avatar, message.username);
+            
+            // Remove empty state if present
+            if (messagesDiv.children.length === 1 && messagesDiv.children[0].classList.contains('empty-state')) {
+                messagesDiv.innerHTML = '';
+            }
+            
+            // Remove loading state if present
+            if (messagesDiv.children.length === 1 && messagesDiv.children[0].classList.contains('loading-state')) {
+                messagesDiv.innerHTML = '';
+            }
+            
+            const messageHtml = `
+                <div class="message ${isOwn ? 'sent' : 'received'}">
+                    ${!isOwn ? `<div class="message-avatar"><img src="${avatarUrl}" alt="${message.username}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(message.username)}&background=d4e0e8&color=2c3e50'"></div>` : ''}
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${escapeHtml(message.username)}</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-text">${escapeHtml(message.message)}</div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.insertAdjacentHTML('beforeend', messageHtml);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Load messages from API
+        async function loadMessages(channel) {
+            showLoadingState();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/messages/${channel}`);
+                const data = await response.json();
+                
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                
+                if (data.success && data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        const isOwn = msg.user_id === currentUser.id;
+                        addMessageToChat(msg, isOwn);
+                    });
+                } else {
+                    showEmptyState();
+                }
+                
+                // Reset unread count for this channel
+                resetUnreadCount();
+                
+            } catch (err) {
+                console.error('Error loading messages:', err);
+                messagesDiv.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading messages. Please try again.</p></div>';
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const messageData = {
+                userId: currentUser.id,
+                username: currentUser.name,
+                avatar: currentUser.avatar,
+                channel: currentChannel,
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to UI immediately (optimistic update)
+            addMessageToChat({
+                username: currentUser.name,
+                avatar: currentUser.avatar,
+                message: message,
+                created_at: new Date().toISOString()
+            }, true);
+            
+            input.value = '';
+            
+            // Send via Socket.io if connected
+            if (socket && socket.connected) {
+                socket.emit('send-message', messageData);
+            } else {
+                // Fallback: Save via REST API
+                try {
+                    await fetch(`${API_BASE}/api/save-message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(messageData)
+                    });
+                } catch (err) {
+                    console.error('Error saving message:', err);
+                }
+            }
+        }
+        
+        // Handle typing
+        function handleTyping() {
+            if (typingTimeout) clearTimeout(typingTimeout);
+            if (socket && socket.connected) {
+                socket.emit('typing', {
+                    username: currentUser.name,
+                    channel: currentChannel
+                });
+            }
+            typingTimeout = setTimeout(() => {}, 1000);
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator(username) {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.querySelector('span').innerHTML = `${username} is typing...`;
+            indicator.style.display = 'flex';
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Initialize Socket.io
+        function initSocket() {
+            try {
+                socket = io(API_BASE);
+                
+                socket.on('connect', () => {
+                    console.log('✅ Connected to chat server');
+                    socket.emit('user-join', {
+                        userId: currentUser.id,
+                        username: currentUser.name,
+                        avatar: currentUser.avatar
+                    });
+                    loadMessages(currentChannel);
+                });
+                
+                socket.on('new-message', (message) => {
+                    if (message.channel === currentChannel) {
+                        // Check for duplicate (avoid adding same message twice)
+                        const messagesDiv = document.getElementById('messages');
+                        const lastMessage = messagesDiv.lastElementChild;
+                        const lastText = lastMessage?.querySelector('.message-text')?.innerText;
+                        const isDuplicate = lastText === message.message && 
+                                            lastMessage?.querySelector('.message-author')?.innerText === message.username;
+                        
+                        if (!isDuplicate) {
+                            addMessageToChat(message, message.user_id === currentUser.id);
+                        }
+                    } else {
+                        // Increment unread count for other channels
+                        incrementUnreadCount(message.channel);
+                    }
+                });
+                
+                socket.on('online-users', (data) => {
+                    document.getElementById('onlineCountBadge').textContent = data.count || 0;
+                });
+                
+                socket.on('user-typing', (data) => {
+                    if (data.channel === currentChannel && data.username !== currentUser.name) {
+                        showTypingIndicator(data.username);
+                    }
+                });
+                
+                socket.on('disconnect', () => {
+                    console.log('❌ Disconnected from chat server');
+                });
+                
+            } catch (err) {
+                console.error('Socket connection error:', err);
+                loadMessages(currentChannel);
+            }
+        }
+        
+        // Channel switching (with loading state)
+        function switchChannel(channelElement) {
+            // Remove active class from all channels
+            document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
+            channelElement.classList.add('active');
+            
+            // Update current channel
+            currentChannel = channelElement.dataset.channel;
+            
+            // Show loading state
+            showLoadingState();
+            
+            // Load messages for new channel
+            loadMessages(currentChannel);
+            
+            // Notify socket
+            if (socket && socket.connected) {
+                socket.emit('join-channel', currentChannel);
+            }
+        }
+        
+        // Channel switching event listeners
+        document.querySelectorAll('.channel').forEach(channel => {
+            channel.addEventListener('click', () => switchChannel(channel));
+        });
+        
+        // Message input events
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            } else {
+                handleTyping();
+            }
+        });
+        
+        // Search messages (using CSS class toggle)
+        document.getElementById('searchMessages').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const messages = document.querySelectorAll('.message');
+            let visibleCount = 0;
+            
+            messages.forEach(msg => {
+                const text = msg.querySelector('.message-text')?.innerText.toLowerCase();
+                if (!searchTerm || (text && text.includes(searchTerm))) {
+                    msg.classList.remove('hidden-msg');
+                    visibleCount++;
+                } else {
+                    msg.classList.add('hidden-msg');
+                }
+            });
+            
+            // Show no results message if needed
+            const messagesDiv = document.getElementById('messages');
+            const existingNoResult = messagesDiv.querySelector('.no-results');
+            
+            if (searchTerm && visibleCount === 0) {
+                if (!existingNoResult) {
+                    messagesDiv.insertAdjacentHTML('beforeend', '<div class="no-results empty-state"><i class="fas fa-search"></i><p>No messages found 🔍</p></div>');
+                }
+            } else if (existingNoResult) {
+                existingNoResult.remove();
+            }
+        });
+        
+        // Notification click - reset badge
+        document.getElementById('notificationBtn').addEventListener('click', () => {
+            // Reset all unread counts for non-current channels
+            for (let channel in unreadCounts) {
+                if (channel !== currentChannel) {
+                    unreadCounts[channel] = 0;
+                }
+            }
+            updateNotificationBadge();
+            alert('📬 Your notifications:\n• New messages in other channels\n• Quiz results available\n• Study plan updated');
+        });
+        
+        // Mobile menu
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Initialize
+        initSocket();
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "subjects": [
+    {
+      "name": "Data Structures",
+      "topics": ["Arrays", "Linked Lists", "Trees", "Graphs", "Stacks", "Queues"],
+      "questions": [
+        {
+          "id": 1,
+          "text": "What is the time complexity of accessing an element in an array by index?",
+          "options": ["O(1)", "O(n)", "O(log n)", "O(n²)"],
+          "correct": 0,
+          "difficulty": "easy",
+          "explanation": "Arrays provide O(1) random access because elements are stored in contiguous memory locations."
+        },
+        {
+          "id": 2,
+          "text": "Which data structure is used for implementing recursion?",
+          "options": ["Queue", "Stack", "Array", "Tree"],
+          "correct": 1,
+          "difficulty": "easy",
+          "explanation": "Stack is used for recursion because it follows LIFO principle."
+        },
+        {
+          "id": 3,
+          "text": "What is the worst-case time complexity of quicksort?",
+          "options": ["O(n log n)", "O(n²)", "O(n)", "O(log n)"],
+          "correct": 1,
+          "difficulty": "medium",
+          "explanation": "Quicksort has O(n²) worst-case when pivot is always smallest or largest element."
+        }
+      ]
+    },
+    {
+      "name": "Operating Systems",
+      "topics": ["Process Management", "Memory Management", "File Systems", "Scheduling"],
+      "questions": [
+        {
+          "id": 1,
+          "text": "What is a deadlock?",
+          "options": [
+            "Process termination",
+            "Memory allocation failure",
+            "Processes waiting indefinitely for resources",
+            "CPU scheduling error"
+          ],
+          "correct": 2,
+          "difficulty": "medium",
+          "explanation": "Deadlock is a situation where processes wait indefinitely for resources held by each other."
+        },
+        {
+          "id": 2,
+          "text": "Which scheduling algorithm may cause starvation?",
+          "options": ["FCFS", "Round Robin", "Priority Scheduling", "SJF"],
+          "correct": 2,
+          "difficulty": "hard",
+          "explanation": "Priority scheduling can cause starvation of lower priority processes."
+        }
+      ]
+    }
+  ]
+}

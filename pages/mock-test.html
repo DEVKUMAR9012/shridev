@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Tests · Shridev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #faf9f6;
+            --text-primary: #2c3e50;
+            --text-secondary: #5e6f8d;
+            --text-soft: #8b9bb5;
+            --accent-1: #e8e3d5;
+            --accent-2: #d4e0e8;
+            --accent-3: #f0ded2;
+            --accent-4: #d8e0da;
+            --gradient-1: linear-gradient(145deg, #fdfcfb 0%, #e2d1c3 100%);
+            --gradient-2: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+            --gradient-3: linear-gradient(145deg, #fbe9f0 0%, #f2d9e6 100%);
+            --shadow-sm: 0 10px 30px -15px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 20px 40px -20px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 30px 60px -30px rgba(0, 0, 0, 0.15);
+            --border-radius-sm: 16px;
+            --border-radius-md: 24px;
+            --border-radius-lg: 32px;
+            --border-radius-xl: 40px;
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-soft {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(216, 224, 218, 0.3) 0%, transparent 30%),
+                        radial-gradient(circle at 80% 70%, rgba(240, 222, 210, 0.3) 0%, transparent 40%),
+                        radial-gradient(circle at 40% 80%, rgba(212, 224, 232, 0.3) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 24px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-xl);
+            padding: 24px 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            height: calc(100vh - 40px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-header {
+            padding: 8px 16px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: var(--text-primary);
+        }
+
+        .logo span {
+            font-family: var(--font-primary);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo span small {
+            font-size: 14px;
+            color: var(--text-soft);
+            margin-left: 4px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: var(--border-radius-lg);
+            color: var(--text-secondary);
+            text-decoration: none;
+            gap: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.2rem;
+            color: var(--text-soft);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: white;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge {
+            background: var(--accent-3);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-xl);
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .search {
+            position: relative;
+            width: 300px;
+        }
+
+        .search i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-soft);
+        }
+
+        .search input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 40px;
+            font-family: var(--font-secondary);
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .search input:focus {
+            outline: none;
+            background: white;
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification {
+            position: relative;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .notification:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .notification i {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .notification .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px 6px 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        /* Page Title */
+        .page-title {
+            margin-bottom: 24px;
+        }
+
+        .page-title h1 {
+            font-family: var(--font-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* API Status */
+        .api-status {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-lg);
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .api-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .api-dot.loading {
+            background: #f59e0b;
+        }
+
+        .api-dot.error {
+            background: #e74c3c;
+            animation: none;
+        }
+
+        /* Tests Grid */
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-lg);
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .test-card:hover {
+            background: white;
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .test-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-2);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .test-info h3 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .test-info p {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+        }
+
+        .test-details {
+            display: flex;
+            gap: 16px;
+            margin: 16px 0;
+            padding: 12px 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .detail {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-start-test {
+            width: 100%;
+            padding: 12px;
+            background: var(--gradient-2);
+            border: none;
+            border-radius: var(--border-radius-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+
+        .btn-start-test:hover {
+            transform: translateY(-2px);
+            background: var(--gradient-3);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 1000;
+                transition: transform 0.3s;
+            }
+            .sidebar.active {
+                left: 16px;
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 16px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .search {
+                width: 100%;
+            }
+            .tests-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-soft"></div>
+    <button class="mobile-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo" onclick="window.location.href='dashboard.html'">
+                    <i class="fas fa-gem"></i>
+                    <span>Shridev<small>·hub</small></span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item" onclick="window.location.href='dashboard.html'"><i class="fas fa-home"></i><span>Dashboard</span></div>
+                <div class="nav-item" onclick="window.location.href='subjects.html'"><i class="fas fa-book-open"></i><span>Subjects</span></div>
+                <div class="nav-item" onclick="window.location.href='quiz-generator.html'"><i class="fas fa-robot"></i><span>AI Quiz</span></div>
+                <div class="nav-item active"><i class="fas fa-clock"></i><span>Mock Tests</span></div>
+                <div class="nav-item" onclick="window.location.href='chat.html'"><i class="fas fa-comments"></i><span>Community</span><span class="badge">24</span></div>
+                <div class="nav-item" onclick="window.location.href='leaderboard.html'"><i class="fas fa-trophy"></i><span>Leaderboard</span></div>
+                <div class="nav-item" onclick="window.location.href='study-planner.html'"><i class="fas fa-calendar-alt"></i><span>Study Planner</span></div>
+                <div class="nav-item" onclick="window.location.href='profile.html'"><i class="fas fa-user"></i><span>Profile</span></div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search tests...">
+                </div>
+                <div class="header-actions">
+                    <div class="notification" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user" onclick="window.location.href='profile.html'">
+                        <div class="user-avatar">
+                            <img id="userAvatar" src="https://ui-avatars.com/api/?name=Dev+Kumar&background=d4e0e8&color=2c3e50" alt="Profile">
+                        </div>
+                        <span class="user-name" id="userName">Dev Kumar</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Title -->
+            <div class="page-title">
+                <h1>📝 Mock Tests</h1>
+                <p>Practice with real exam patterns and timed tests powered by OpenTrivia API</p>
+            </div>
+
+            <!-- API Status -->
+            <div class="api-status">
+                <div class="api-badge">
+                    <div class="api-dot" id="apiDot"></div>
+                    <span id="apiStatus">Checking API status...</span>
+                </div>
+                <div class="api-badge">
+                    <i class="fas fa-database"></i>
+                    <span>Questions from OpenTrivia DB (Free API)</span>
+                </div>
+            </div>
+
+            <!-- Tests Grid -->
+            <div class="tests-grid" id="testsContainer"></div>
+        </main>
+    </div>
+
+    <script>
+        // Check authentication
+        const currentUser = (() => {
+            try {
+                const user = localStorage.getItem('shridev_user') || sessionStorage.getItem('shridev_user');
+                return user ? JSON.parse(user) : null;
+            } catch { return null; }
+        })();
+
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        // Update user info
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userAvatar').src = currentUser.avatar || 
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=d4e0e8&color=2c3e50`;
+
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+        }
+
+        // Subject list with topics
+        const subjects = [
+            { name: "Python Programming", icon: "fa-python", topic: "python", color: "#3776AB" },
+            { name: "JavaScript", icon: "fa-js", topic: "javascript", color: "#F7DF1E" },
+            { name: "C Programming", icon: "fa-code", topic: "c", color: "#A8B9CC" },
+            { name: "Java", icon: "fa-java", topic: "java", color: "#007396" },
+            { name: "Data Structures", icon: "fa-diagram-project", topic: "ds", color: "#2c3e50" },
+            { name: "Operating System", icon: "fa-desktop", topic: "os", color: "#3498db" },
+            { name: "Computer Networks", icon: "fa-network-wired", topic: "cn", color: "#9b59b6" },
+            { name: "Database Management", icon: "fa-database", topic: "dbms", color: "#e67e22" },
+            { name: "Web Development", icon: "fa-globe", topic: "web", color: "#e74c3c" },
+            { name: "Machine Learning", icon: "fa-brain", topic: "ml", color: "#16a085" }
+        ];
+
+        // API Categories mapping (OpenTrivia API)
+        const categoryMap = {
+            "python": 21,      // Computer Science category
+            "javascript": 18,  // Computer Science
+            "c": 18,           // Computer Science
+            "java": 18,        // Computer Science
+            "ds": 18,          // Computer Science
+            "os": 18,          // Computer Science
+            "cn": 18,          // Computer Science
+            "dbms": 18,        // Computer Science
+            "web": 18,         // Computer Science
+            "ml": 18           // Computer Science
+        };
+
+        // Check API status
+        async function checkAPIStatus() {
+            const apiDot = document.getElementById('apiDot');
+            const apiStatus = document.getElementById('apiStatus');
+            
+            try {
+                const res = await fetch('https://opentdb.com/api.php?amount=1');
+                if (res.ok) {
+                    apiDot.className = 'api-dot';
+                    apiStatus.innerHTML = '✅ OpenTrivia API is live · Free questions available';
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                apiDot.className = 'api-dot error';
+                apiStatus.innerHTML = '⚠️ Using fallback questions (API unavailable)';
+            }
+        }
+
+        // Fetch questions from API
+        async function fetchQuestions(category, count = 10) {
+            const categoryId = categoryMap[category] || 18;
+            
+            try {
+                const res = await fetch(`https://opentdb.com/api.php?amount=${count}&category=${categoryId}&type=multiple&encode=url3986`);
+                const data = await res.json();
+                
+                if (data.response_code === 0 && data.results.length > 0) {
+                    return data.results.map(q => ({
+                        question: decodeURIComponent(q.question),
+                        correct_answer: decodeURIComponent(q.correct_answer),
+                        incorrect_answers: q.incorrect_answers.map(a => decodeURIComponent(a))
+                    }));
+                }
+                throw new Error('No questions');
+            } catch (err) {
+                console.log('API failed, using fallback questions');
+                return getFallbackQuestions(category, count);
+            }
+        }
+
+        // Fallback questions (local)
+        function getFallbackQuestions(topic, count) {
+            const fallback = [];
+            for (let i = 1; i <= count; i++) {
+                fallback.push({
+                    question: `${topic} - Sample Question ${i}: What is the correct answer?`,
+                    correct_answer: `Correct Answer ${i}`,
+                    incorrect_answers: [`Wrong Option A`, `Wrong Option B`, `Wrong Option C`]
+                });
+            }
+            return fallback;
+        }
+
+        // Start test
+        async function startTest(subject) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.disabled = true;
+            
+            try {
+                const questions = await fetchQuestions(subject.topic, 10);
+                
+                localStorage.setItem('mock_questions', JSON.stringify(questions));
+                localStorage.setItem('mock_topic', subject.name);
+                localStorage.setItem('mock_subject', subject.topic);
+                
+                window.location.href = 'test.html';
+            } catch (err) {
+                alert('Failed to load questions. Please try again.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Render tests grid
+        function renderTests() {
+            const container = document.getElementById('testsContainer');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = subjects.filter(s => 
+                s.name.toLowerCase().includes(searchTerm) || 
+                s.topic.toLowerCase().includes(searchTerm)
+            );
+            
+            container.innerHTML = filtered.map(sub => `
+                <div class="test-card" data-topic="${sub.topic}">
+                    <div class="test-header">
+                        <div class="test-icon" style="background: ${sub.color}20; color: ${sub.color}">
+                            <i class="fab ${sub.icon}"></i>
+                        </div>
+                        <div class="test-info">
+                            <h3>${sub.name}</h3>
+                            <p>Mock Test</p>
+                        </div>
+                    </div>
+                    <div class="test-details">
+                        <div class="detail"><i class="fas fa-clock"></i> 15 min</div>
+                        <div class="detail"><i class="fas fa-question-circle"></i> 10 questions</div>
+                        <div class="detail"><i class="fas fa-chart-line"></i> 100 marks</div>
+                    </div>
+                    <button class="btn-start-test" onclick='startTest(${JSON.stringify(sub)})'>
+                        Start Test <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', renderTests);
+        
+        // Notification
+        document.getElementById('notificationBtn').addEventListener('click', () => {
+            alert('📬 3 new updates:\n• New mock tests added\n• Leaderboard updated\n• Weekly challenge available');
+        });
+
+        // Initialize
+        checkAPIStatus();
+        renderTests();
+    </script>
+</body>
+</html>

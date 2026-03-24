@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · Shridev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #faf9f6; --text-primary: #2c3e50; --text-secondary: #5e6f8d; --text-soft: #8b9bb5;
+            --accent-1: #e8e3d5; --accent-2: #d4e0e8; --accent-3: #f0ded2;
+            --gradient-1: linear-gradient(145deg, #fdfcfb 0%, #e2d1c3 100%);
+            --gradient-2: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+            --shadow-sm: 0 10px 30px -15px rgba(0,0,0,0.05);
+            --border-radius-xl: 40px; --border-radius-lg: 32px;
+            --font-primary: 'Plus Jakarta Sans', sans-serif; --font-secondary: 'Inter', sans-serif;
+        }
+        body { font-family: var(--font-secondary); background: var(--bg-primary); color: var(--text-primary); }
+        .bg-soft { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(216,224,218,0.3) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(240,222,210,0.3) 0%, transparent 40%); z-index: -1; }
+        .dashboard { display: flex; min-height: 100vh; max-width: 1600px; margin: 0 auto; padding: 20px; gap: 24px; }
+        .sidebar { width: 280px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 24px 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.5); height: calc(100vh - 40px); position: sticky; top: 20px; }
+        .sidebar-header { padding: 8px 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo i { font-size: 32px; color: var(--text-primary); }
+        .logo span { font-family: var(--font-primary); font-size: 24px; font-weight: 700; }
+        .logo span small { font-size: 14px; color: var(--text-soft); }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; border-radius: var(--border-radius-lg); color: var(--text-secondary); text-decoration: none; gap: 12px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+        .nav-item i { width: 24px; font-size: 1.2rem; color: var(--text-soft); }
+        .nav-item:hover { background: rgba(255,255,255,0.8); color: var(--text-primary); transform: translateX(5px); }
+        .nav-item.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+        .badge { background: var(--accent-3); padding: 4px 8px; border-radius: 30px; font-size: 11px; font-weight: 600; margin-left: auto; }
+        .main-content { flex: 1; }
+        .header { background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.5); }
+        .search { position: relative; width: 300px; }
+        .search i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-soft); }
+        .search input { width: 100%; padding: 12px 16px 12px 45px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 40px; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .notification { position: relative; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.5); border-radius: 50%; }
+        .notification .badge { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 6px; }
+        .user { display: flex; align-items: center; gap: 12px; padding: 6px 12px 6px 6px; background: rgba(255,255,255,0.5); border-radius: 40px; cursor: pointer; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; }
+        .user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .welcome { background: var(--gradient-1); border-radius: var(--border-radius-xl); padding: 32px; margin-bottom: 24px; position: relative; overflow: hidden; }
+        .welcome h1 { font-family: var(--font-primary); font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .action-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-lg); padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.8); }
+        .action-card:hover { background: white; transform: translateY(-5px); }
+        .action-icon { width: 48px; height: 48px; background: var(--gradient-2); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-lg); padding: 20px; transition: all 0.3s; }
+        .stat-card:hover { background: white; transform: translateY(-5px); }
+        .stat-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .stat-icon { width: 48px; height: 48px; background: var(--gradient-2); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+        .stat-value { font-family: var(--font-primary); font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .charts-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .chart-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); padding: 20px; height: 300px; }
+        .learning-section { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); padding: 24px; margin-bottom: 24px; }
+        .learning-item { display: flex; align-items: center; gap: 20px; padding: 16px; background: rgba(255,255,255,0.3); border-radius: 20px; margin-bottom: 12px; }
+        .learning-info { flex: 1; }
+        .progress { width: 150px; height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--gradient-2); border-radius: 10px; }
+        .continue-btn { padding: 8px 16px; background: white; border: none; border-radius: 30px; cursor: pointer; transition: all 0.2s; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
+        .subject-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-lg); padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .subject-card:hover { background: white; transform: translateY(-5px); }
+        .subject-card i { font-size: 2rem; margin-bottom: 12px; }
+        .activities { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); padding: 24px; }
+        .activity-item { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .mobile-menu-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .quick-actions { grid-template-columns: repeat(2,1fr); } .subjects-grid { grid-template-columns: repeat(3,1fr); } .charts-section { grid-template-columns: 1fr; } }
+        @media (max-width: 992px) { .sidebar { position: fixed; left: -280px; z-index: 1000; } .sidebar.active { left: 16px; } .mobile-menu-btn { display: flex; } }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: 1fr; } .subjects-grid { grid-template-columns: repeat(2,1fr); } .header { flex-direction: column; } .search { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="bg-soft"></div>
+    <button class="mobile-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+    <div class="dashboard">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo" onclick="window.location.href='dashboard.html'"><i class="fas fa-gem"></i><span>Shridev<small>·hub</small></span></div></div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" onclick="window.location.href='dashboard.html'"><i class="fas fa-home"></i><span>Dashboard</span></div>
+                <div class="nav-item" onclick="window.location.href='subjects.html'"><i class="fas fa-book-open"></i><span>Subjects</span></div>
+                <div class="nav-item" onclick="window.location.href='quiz-generator.html'"><i class="fas fa-robot"></i><span>AI Quiz</span></div>
+                <div class="nav-item" onclick="window.location.href='mock-test.html'"><i class="fas fa-clock"></i><span>Mock Tests</span></div>
+                <div class="nav-item" onclick="window.location.href='chat.html'"><i class="fas fa-comments"></i><span>Community</span><span class="badge">24</span></div>
+                <div class="nav-item" onclick="window.location.href='leaderboard.html'"><i class="fas fa-trophy"></i><span>Leaderboard</span></div>
+                <div class="nav-item" onclick="window.location.href='study-planner.html'"><i class="fas fa-calendar-alt"></i><span>Study Planner</span></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
+                <div class="header-actions"><div class="notification"><i class="fas fa-bell"></i><span class="badge">5</span></div><div class="user" onclick="window.location.href='profile.html'"><div class="user-avatar"><img src="https://ui-avatars.com/api/?name=Dev+Kumar&background=d4e0e8&color=2c3e50" id="userAvatar"></div><span class="user-name" id="userName">Dev Kumar</span><i class="fas fa-chevron-down"></i></div></div>
+            </header>
+            <div class="welcome"><h1 id="welcomeMessage">Welcome back, Dev ✦</h1><p>Continue your learning journey. You're making beautiful progress.</p></div>
+            <div class="quick-actions">
+                <div class="action-card" onclick="window.location.href='quiz-generator.html'"><div class="action-icon"><i class="fas fa-magic"></i></div><div><h3>AI Quiz</h3><p>Generate with AI</p></div></div>
+                <div class="action-card" onclick="window.location.href='chat.html'"><div class="action-icon"><i class="fas fa-comments"></i></div><div><h3>Community</h3><p>24 online now</p></div></div>
+                <div class="action-card" onclick="window.location.href='study-planner.html'"><div class="action-icon"><i class="fas fa-calendar-alt"></i></div><div><h3>Study Plan</h3><p>Create schedule</p></div></div>
+                <div class="action-card" onclick="window.location.href='mock-test.html'"><div class="action-icon"><i class="fas fa-clock"></i></div><div><h3>Mock Test</h3><p>Practice exam</p></div></div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><span>Quizzes Completed</span></div><div class="stat-value">47</div><span>↑ 12 this week</span></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-fire"></i></div><span>Day Streak</span></div><div class="stat-value">23</div><span>↑ +5 days</span></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-star"></i></div><span>Average Score</span></div><div class="stat-value">78%</div><span>↑ +8%</span></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-clock"></i></div><span>Study Hours</span></div><div class="stat-value">156</div><span>↑ +24 this month</span></div>
+            </div>
+            <div class="charts-section"><div class="chart-card"><canvas id="progressChart"></canvas></div><div class="chart-card"><canvas id="subjectChart"></canvas></div></div>
+            <div class="learning-section"><h3>📖 Continue Learning</h3>
+                <div class="learning-item"><div><h4>Data Structures - Trees</h4><p>Binary Trees, BST, AVL Trees</p></div><div class="progress"><div class="progress-bar" style="width:65%"></div></div><button class="continue-btn" onclick="window.location.href='quiz-generator.html'">Continue →</button></div>
+                <div class="learning-item"><div><h4>Operating Systems - Process Management</h4><p>Process Scheduling, IPC, Deadlocks</p></div><div class="progress"><div class="progress-bar" style="width:40%"></div></div><button class="continue-btn" onclick="window.location.href='quiz-generator.html'">Continue →</button></div>
+            </div>
+            <div class="subjects-grid">
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-code"></i><span>Data Structures</span><small>12 topics</small></div>
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-microchip"></i><span>OS</span><small>8 topics</small></div>
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-network-wired"></i><span>Networks</span><small>10 topics</small></div>
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-database"></i><span>DBMS</span><small>7 topics</small></div>
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-calculator"></i><span>Maths</span><small>15 topics</small></div>
+                <div class="subject-card" onclick="window.location.href='subjects.html'"><i class="fas fa-bolt"></i><span>D.E.</span><small>9 topics</small></div>
+            </div>
+            <div class="activities"><h3>📋 Recent Activities</h3>
+                <div class="activity-item"><i class="fas fa-question-circle"></i><div><p>Completed Data Structures Quiz</p><small>Score: 85%</small></div><span>2h ago</span></div>
+                <div class="activity-item"><i class="fas fa-comments"></i><div><p>Posted doubt in OS Discussion</p><small>3 replies</small></div><span>5h ago</span></div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const user = localStorage.getItem('shridev_user') ? JSON.parse(localStorage.getItem('shridev_user')) : (sessionStorage.getItem('shridev_user') ? JSON.parse(sessionStorage.getItem('shridev_user')) : null);
+        if (!user) window.location.href = 'login.html';
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userAvatar').src = user.avatar;
+        document.getElementById('welcomeMessage').textContent = `Welcome back, ${user.name.split(' ')[0]} ✦`;
+        new Chart(document.getElementById('progressChart'), { type: 'line', data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ label: 'Study Hours', data: [2.5,3,1.5,4,2,3.5,2.5], borderColor: '#2c3e50', backgroundColor: 'rgba(44,62,80,0.05)', fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
+        new Chart(document.getElementById('subjectChart'), { type: 'doughnut', data: { labels: ['DS','OS','CN','DBMS','Maths'], datasets: [{ data: [85,72,68,90,75], backgroundColor: ['#d4e0e8','#f0ded2','#d8e0da','#e8e3d5','#cfdef3'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%' } });
+        function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
+    </script>
+</body>
+</html>rend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+5 days</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <span class="stat-title">Average Score</span>
+                    </div>
+                    <div class="stat-value">78%</div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+8%</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <span class="stat-title">Study Hours</span>
+                    </div>
+                    <div class="stat-value">156</div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+24 this month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section - FIXED HEIGHT -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Weekly Progress</h3>
+                        <span class="chart-period">Last 7 days</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Subject Performance</h3>
+                        <span class="chart-period">Overall</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Continue Learning -->
+            <div class="learning-section">
+                <h3 class="section-title">
+                    <i class="fas fa-play-circle"></i>
+                    Continue Learning
+                </h3>
+                
+                <div class="learning-item">
+                    <div class="learning-info">
+                        <h4>Data Structures - Trees</h4>
+                        <p>Binary Trees, BST, AVL Trees</p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 65%"></div>
+                    </div>
+                    <button class="continue-btn" onclick="window.location.href='quiz-generator.html?subject=trees'">
+                        Continue <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="learning-item">
+                    <div class="learning-info">
+                        <h4>Operating Systems - Process Management</h4>
+                        <p>Process Scheduling, IPC, Deadlocks</p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 40%"></div>
+                    </div>
+                    <button class="continue-btn" onclick="window.location.href='quiz-generator.html?subject=os'">
+                        Continue <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="learning-item">
+                    <div class="learning-info">
+                        <h4>Computer Networks - TCP/IP</h4>
+                        <p>Protocols, Routing, Application Layer</p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 80%"></div>
+                    </div>
+                    <button class="continue-btn" onclick="window.location.href='quiz-generator.html?subject=networks'">
+                        Continue <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subjects Grid -->
+            <div class="subjects-grid">
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=ds'">
+                    <i class="fas fa-code"></i>
+                    <span>Data Structures</span>
+                    <small>12 topics · 85%</small>
+                </div>
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=os'">
+                    <i class="fas fa-microchip"></i>
+                    <span>OS</span>
+                    <small>8 topics · 72%</small>
+                </div>
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=cn'">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Networks</span>
+                    <small>10 topics · 68%</small>
+                </div>
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=dbms'">
+                    <i class="fas fa-database"></i>
+                    <span>DBMS</span>
+                    <small>7 topics · 90%</small>
+                </div>
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=maths'">
+                    <i class="fas fa-calculator"></i>
+                    <span>Maths</span>
+                    <small>15 topics · 75%</small>
+                </div>
+                <div class="subject-card" onclick="window.location.href='subjects.html?subject=de'">
+                    <i class="fas fa-bolt"></i>
+                    <span>D.E.</span>
+                    <small>9 topics · 82%</small>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="activities">
+                <h3 class="section-title">
+                    <i class="fas fa-history"></i>
+                    Recent Activities
+                </h3>
+
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p>Completed Data Structures Quiz</p>
+                        <small>Score: 85%</small>
+                    </div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p>Posted doubt in OS Discussion</p>
+                        <small>3 replies</small>
+                    </div>
+                    <div class="activity-time">5 hours ago</div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p>Earned '7 Day Streak' Achievement</p>
+                        <small>50 points</small>
+                    </div>
+                    <div class="activity-time">1 day ago</div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p>Joined Study Room: DBMS Revision</p>
+                        <small>12 members</small>
+                    </div>
+                    <div class="activity-time">2 days ago</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check authentication
+        (function checkAuth() {
+            const user = localStorage.getItem('shridev_user') || sessionStorage.getItem('shridev_user');
+            const token = localStorage.getItem('shridev_token') || sessionStorage.getItem('shridev_token');
+            
+            if (!user || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        })();
+
+        // Charts - FIXED SIZING
+        document.addEventListener('DOMContentLoaded', function() {
+            // Progress Chart
+            const ctx1 = document.getElementById('progressChart')?.getContext('2d');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Study Hours',
+                            data: [2.5, 3, 1.5, 4, 2, 3.5, 2.5],
+                            borderColor: '#2c3e50',
+                            backgroundColor: 'rgba(44, 62, 80, 0.05)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#2c3e50',
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.03)' },
+                                ticks: { 
+                                    color: '#8b9bb5',
+                                    font: { size: 10 }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { 
+                                    color: '#8b9bb5',
+                                    font: { size: 10 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Subject Chart
+            const ctx2 = document.getElementById('subjectChart')?.getContext('2d');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['DS', 'OS', 'CN', 'DBMS', 'Maths'],
+                        datasets: [{
+                            data: [85, 72, 68, 90, 75],
+                            backgroundColor: [
+                                '#d4e0e8',
+                                '#f0ded2',
+                                '#d8e0da',
+                                '#e8e3d5',
+                                '#cfdef3'
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#5e6f8d',
+                                    font: { size: 10 },
+                                    boxWidth: 8,
+                                    padding: 8
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+        });
+
+        // User menu dropdown
+        const userMenu = document.getElementById('userMenu');
+        const profileDropdown = document.getElementById('profileDropdown');
+        
+        if (userMenu) {
+            userMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+        }
+
+        document.addEventListener('click', function() {
+            profileDropdown.classList.remove('show');
+        });
+
+        // Mobile menu
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Ready to leave? Your progress is saved.')) {
+                localStorage.removeItem('shridev_user');
+                localStorage.removeItem('shridev_token');
+                sessionStorage.removeItem('shridev_user');
+                sessionStorage.removeItem('shridev_token');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Search
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                console.log('Searching:', e.target.value);
+            });
+        }
+
+        // Notification
+        document.getElementById('notificationBtn')?.addEventListener('click', function() {
+            alert('✨ 5 new updates:\n• 2 messages in DSA chat\n• Quiz result ready\n• Study plan generated\n• Achievement unlocked\n• Mock test reminder');
+        });
+    </script>
+</body>
+</html>

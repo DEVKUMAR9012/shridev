@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test · Shridev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #faf9f6;
+            --text-primary: #2c3e50;
+            --text-secondary: #5e6f8d;
+            --primary: #6366f1;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --gradient-2: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+            --shadow-sm: 0 10px 30px -15px rgba(0,0,0,0.05);
+            --border-radius-xl: 40px;
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+        }
+        body { font-family: var(--font-secondary); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+        .bg-soft { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(216,224,218,0.3) 0%, transparent 30%), radial-gradient(circle at 80% 70%, rgba(240,222,210,0.3) 0%, transparent 40%); z-index: -1; }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .quiz-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-xl);
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.05); flex-wrap: wrap; gap: 16px; }
+        .quiz-info h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .quiz-meta { display: flex; gap: 16px; color: var(--text-secondary); font-size: 0.85rem; }
+        .timer {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .timer .time { font-size: 1.8rem; font-weight: 800; }
+        .timer .label { font-size: 0.7rem; opacity: 0.8; }
+        
+        .question-card { background: rgba(255,255,255,0.5); padding: 24px; border-radius: 24px; margin-bottom: 24px; }
+        .question-number { color: var(--primary); font-weight: 600; margin-bottom: 12px; }
+        .question-text { font-size: 1.2rem; line-height: 1.5; margin-bottom: 24px; }
+        
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option:hover { border-color: var(--primary); transform: translateX(8px); }
+        .option.selected { border-color: var(--primary); background: rgba(99,102,241,0.05); }
+        .option-prefix {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 24px; gap: 12px; flex-wrap: wrap; }
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .prev-btn { background: #e2e8f0; color: #2c3e50; }
+        .next-btn, .submit-btn { background: var(--primary); color: white; }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .result-card { text-align: center; }
+        .score-circle { width: 150px; height: 150px; margin: 24px auto; position: relative; }
+        .score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .weak-topics { margin: 24px 0; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 20px; }
+        .topic-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+        .topic-tag { background: #f0ded2; padding: 6px 14px; border-radius: 30px; font-size: 0.8rem; }
+        .btn-group { display: flex; gap: 16px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+        .btn-primary { background: var(--primary); color: white; padding: 12px 28px; border: none; border-radius: 60px; cursor: pointer; font-weight: 600; }
+        .btn-secondary { background: #e2e8f0; color: #2c3e50; padding: 12px 28px; border: none; border-radius: 60px; cursor: pointer; font-weight: 600; }
+        
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            .quiz-card { padding: 20px; }
+            .quiz-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .timer { align-self: center; }
+            .option { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-soft"></div>
+    <div class="container">
+        <div class="quiz-card" id="quizContainer"></div>
+    </div>
+
+    <script>
+        let questions = [];
+        let topic = '';
+        let currentIndex = 0;
+        let userAnswers = [];
+        let timer = null;
+        let timeLeft = 900; // 15 minutes in seconds
+
+        function decodeHTML(html) {
+            let txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
+        function formatTime(seconds) {
+            let mins = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                const timeDisplay = document.getElementById('timeDisplay');
+                if (timeDisplay) timeDisplay.textContent = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIndex];
+            const container = document.getElementById('quizContainer');
+            
+            let options = [...q.incorrect_answers, q.correct_answer];
+            options = options.map(opt => decodeHTML(opt));
+            options.sort(() => Math.random() - 0.5);
+            
+            const html = `
+                <div class="quiz-header">
+                    <div class="quiz-info">
+                        <h1>📚 ${topic}</h1>
+                        <div class="quiz-meta">
+                            <span>Question ${currentIndex + 1}/${questions.length}</span>
+                            <span>⏱️ 15 min test</span>
+                        </div>
+                    </div>
+                    <div class="timer">
+                        <div class="time" id="timeDisplay">${formatTime(timeLeft)}</div>
+                        <div class="label">Time Remaining</div>
+                    </div>
+                </div>
+                
+                <div class="question-card">
+                    <div class="question-number">Question ${currentIndex + 1}</div>
+                    <div class="question-text">${decodeHTML(q.question)}</div>
+                    <div class="options" id="optionsContainer">
+                        ${options.map((opt, idx) => `
+                            <div class="option ${userAnswers[currentIndex] === opt ? 'selected' : ''}" data-answer="${opt.replace(/"/g, '&quot;')}">
+                                <span class="option-prefix">${String.fromCharCode(65 + idx)}</span>
+                                <span>${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button class="nav-btn prev-btn" ${currentIndex === 0 ? 'disabled' : ''} onclick="prevQuestion()">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    ${currentIndex === questions.length - 1 
+                        ? '<button class="nav-btn submit-btn" onclick="submitQuiz()">Submit Quiz <i class="fas fa-check"></i></button>'
+                        : '<button class="nav-btn next-btn" onclick="nextQuestion()">Next <i class="fas fa-arrow-right"></i></button>'
+                    }
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // Add click handlers to options
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const answer = opt.dataset.answer;
+                    userAnswers[currentIndex] = answer;
+                    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                });
+            });
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function calculateScore() {
+            let correct = 0;
+            questions.forEach((q, idx) => {
+                if (userAnswers[idx] === decodeHTML(q.correct_answer)) {
+                    correct++;
+                }
+            });
+            return { correct, total: questions.length, percentage: (correct / questions.length) * 100 };
+        }
+
+        function submitQuiz() {
+            clearInterval(timer);
+            const score = calculateScore();
+            const resultHtml = `
+                <div class="result-card">
+                    <h2>🎉 Test Complete!</h2>
+                    <div class="score-circle">
+                        <svg width="150" height="150">
+                            <circle cx="75" cy="75" r="70" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+                            <circle cx="75" cy="75" r="70" fill="none" stroke="#6366f1" stroke-width="10"
+                                    stroke-dasharray="${2 * Math.PI * 70}" 
+                                    stroke-dashoffset="${2 * Math.PI * 70 * (1 - score.percentage/100)}"/>
+                        </svg>
+                        <div class="score-text">${Math.round(score.percentage)}%</div>
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <p style="font-size: 1.2rem;">You got <strong>${score.correct}/${score.total}</strong> correct answers</p>
+                    </div>
+                    <div class="weak-topics">
+                        <h3>📚 Performance Summary</h3>
+                        <div class="topic-tags">
+                            <span class="topic-tag">${topic}</span>
+                            <span class="topic-tag">Score: ${Math.round(score.percentage)}%</span>
+                            <span class="topic-tag">Time: ${formatTime(900 - timeLeft)}</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="window.location.href='mock-test.html'">
+                            <i class="fas fa-redo"></i> Try Another Test
+                        </button>
+                        <button class="btn-secondary" onclick="window.location.href='dashboard.html'">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('quizContainer').innerHTML = resultHtml;
+        }
+
+        // Load test data
+        const storedQuestions = localStorage.getItem('mock_questions');
+        const storedTopic = localStorage.getItem('mock_topic');
+        
+        if (storedQuestions && storedTopic) {
+            questions = JSON.parse(storedQuestions);
+            topic = storedTopic;
+            userAnswers = new Array(questions.length).fill(null);
+            renderQuestion();
+            startTimer();
+        } else {
+            document.getElementById('quizContainer').innerHTML = `
+                <div style="text-align: center; padding: 60px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
+                    <p>No test data found. Please start a test from the mock tests page.</p>
+                    <button class="btn-primary" style="margin-top: 20px;" onclick="window.location.href='mock-test.html'">Go to Mock Tests</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

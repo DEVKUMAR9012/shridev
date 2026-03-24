@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator · Shridev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #faf9f6; --text-primary: #2c3e50; --text-secondary: #5e6f8d;
+            --gradient-2: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+            --shadow-sm: 0 10px 30px -15px rgba(0,0,0,0.05);
+            --border-radius-xl: 40px;
+            --font-secondary: 'Inter', sans-serif;
+            --accent: #4f7cff;
+            --correct: #22c55e;
+            --wrong: #ef4444;
+        }
+        body { font-family: var(--font-secondary); background: var(--bg-primary); color: var(--text-primary); }
+        .dashboard { display: flex; min-height: 100vh; max-width: 1600px; margin: 0 auto; padding: 20px; gap: 24px; }
+        .sidebar { width: 280px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 24px 16px; height: calc(100vh - 40px); position: sticky; top: 20px; }
+        .sidebar-header { padding: 8px 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo i { font-size: 32px; color: var(--text-primary); }
+        .logo span { font-size: 24px; font-weight: 700; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; border-radius: 32px; color: var(--text-secondary); text-decoration: none; gap: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .nav-item i { width: 24px; font-size: 1.2rem; }
+        .nav-item:hover { background: rgba(255,255,255,0.8); color: var(--text-primary); transform: translateX(5px); }
+        .nav-item.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+        .badge { background: #f0ded2; padding: 4px 8px; border-radius: 30px; font-size: 11px; margin-left: auto; }
+        .main-content { flex: 1; }
+        .header { background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius-xl); padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+        .search { position: relative; width: 300px; }
+        .search i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #8b9bb5; }
+        .search input { width: 100%; padding: 12px 16px 12px 45px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: 40px; outline: none; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .notification { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.5); border-radius: 50%; cursor: pointer; }
+        .user { display: flex; align-items: center; gap: 12px; padding: 6px 12px 6px 6px; background: rgba(255,255,255,0.5); border-radius: 40px; cursor: pointer; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .generator-container { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); padding: 40px; max-width: 620px; margin: 0 auto; }
+        .generator-container h1 { font-size: 28px; margin-bottom: 8px; font-weight: 800; }
+        .generator-container > p { color: var(--text-secondary); margin-bottom: 8px; }
+        .free-badge { display: inline-flex; align-items: center; gap: 6px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #2e7d32; font-weight: 600; margin-bottom: 28px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group select { width: 100%; padding: 14px; border: 2px solid rgba(0,0,0,0.05); border-radius: 20px; font-size: 15px; background: white; outline: none; transition: border 0.2s; cursor: pointer; }
+        .form-group select:focus { border-color: var(--accent); }
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .cat-btn { padding: 12px 14px; border: 2px solid #f0f0f0; border-radius: 16px; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
+        .cat-btn:hover { border-color: #667eea55; background: #667eea08; color: var(--text-primary); }
+        .cat-btn.active { border-color: #667eea; background: #667eea12; color: #667eea; }
+        .generate-btn { width: 100%; padding: 16px; background: linear-gradient(145deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 20px; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+        .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(102,126,234,0.4); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .mobile-menu-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: white; border: none; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 1001; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .loading-box { text-align: center; padding: 48px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: var(--border-radius-xl); margin-top: 32px; max-width: 620px; margin-left: auto; margin-right: auto; }
+        .spinner { width: 52px; height: 52px; border: 4px solid rgba(102,126,234,0.15); border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-box p { color: var(--text-secondary); font-size: 15px; }
+        .api-badge { display: inline-flex; align-items: center; gap: 6px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #2e7d32; margin-bottom: 16px; font-weight: 600; }
+        #quizArea { max-width: 660px; margin: 32px auto 0; }
+        .quiz-header { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 28px; padding: 28px 32px; color: white; margin-bottom: 24px; }
+        .quiz-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+        .quiz-header .meta { font-size: 13px; opacity: 0.85; display: flex; gap: 16px; flex-wrap: wrap; }
+        .quiz-header .meta span { display: flex; align-items: center; gap: 5px; }
+        .progress-bar { background: rgba(255,255,255,0.25); border-radius: 10px; height: 6px; margin-top: 16px; }
+        .progress-fill { background: white; height: 100%; border-radius: 10px; transition: width 0.4s ease; }
+        .question-card { background: white; border-radius: 24px; padding: 28px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); opacity: 0; transform: translateY(16px); animation: fadeUp 0.4s forwards; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        .question-num { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .question-text { font-size: 16px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option-label { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border: 2px solid #f0f0f0; border-radius: 16px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+        .option-label:hover { border-color: #667eea55; background: #667eea08; }
+        .option-label input[type="radio"] { display: none; }
+        .option-circle { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: #f4f4f8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--text-secondary); transition: all 0.2s; }
+        .option-label.selected { border-color: #667eea; background: #667eea10; }
+        .option-label.selected .option-circle { background: #667eea; color: white; }
+        .option-label.correct { border-color: var(--correct); background: #22c55e10; }
+        .option-label.correct .option-circle { background: var(--correct); color: white; }
+        .option-label.wrong { border-color: var(--wrong); background: #ef444410; }
+        .option-label.wrong .option-circle { background: var(--wrong); color: white; }
+        .option-label.disabled { cursor: default; pointer-events: none; }
+        .submit-area { text-align: center; margin-top: 8px; margin-bottom: 40px; }
+        .submit-btn { padding: 16px 48px; background: linear-gradient(145deg, #667eea, #764ba2); color: white; border: none; border-radius: 20px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(102,126,234,0.35); }
+        .result-card { background: white; border-radius: 28px; padding: 36px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.07); margin-bottom: 24px; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; }
+        .score-circle .score-num { font-size: 36px; font-weight: 800; line-height: 1; }
+        .score-circle .score-denom { font-size: 14px; opacity: 0.8; }
+        .result-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .result-card p { color: var(--text-secondary); margin-bottom: 24px; }
+        .retry-btn { padding: 14px 36px; background: linear-gradient(145deg, #667eea, #764ba2); color: white; border: none; border-radius: 16px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .retry-btn:hover { transform: translateY(-2px); }
+        .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 20px; padding: 20px 24px; color: #c0392b; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; display: flex; align-items: flex-start; gap: 12px; }
+        .error-box i { font-size: 20px; margin-top: 2px; }
+        @media (max-width: 992px) { .sidebar { position: fixed; left: -280px; z-index: 1000; } .sidebar.active { left: 16px; } .mobile-menu-btn { display: flex; } }
+        @media (max-width: 768px) { .dashboard { padding: 16px; } .header { flex-direction: column; gap: 16px; } .search { width: 100%; } .generator-container { padding: 24px; } }
+        @media (max-width: 480px) { .category-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-gem"></i><span>Shridev<small>·hub</small></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item" onclick="window.location.href='dashboard.html'"><i class="fas fa-home"></i><span>Dashboard</span></div>
+            <div class="nav-item" onclick="window.location.href='subjects.html'"><i class="fas fa-book-open"></i><span>Subjects</span></div>
+            <div class="nav-item active"><i class="fas fa-robot"></i><span>AI Quiz</span></div>
+            <div class="nav-item" onclick="window.location.href='mock-test.html'"><i class="fas fa-clock"></i><span>Mock Tests</span></div>
+            <div class="nav-item" onclick="window.location.href='chat.html'"><i class="fas fa-comments"></i><span>Community</span><span class="badge">24</span></div>
+            <div class="nav-item" onclick="window.location.href='leaderboard.html'"><i class="fas fa-trophy"></i><span>Leaderboard</span></div>
+            <div class="nav-item" onclick="window.location.href='study-planner.html'"><i class="fas fa-calendar-alt"></i><span>Study Planner</span></div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Search topics..."></div>
+            <div class="header-actions">
+                <div class="notification"><i class="fas fa-bell"></i><span class="badge">3</span></div>
+                <div class="user" onclick="window.location.href='profile.html'">
+                    <div class="user-avatar"><img src="https://ui-avatars.com/api/?name=Dev+Kumar&background=d4e0e8&color=2c3e50"></div>
+                    <span>Dev Kumar</span><i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="generator-container" id="generatorForm">
+            <h1><i class="fas fa-brain"></i> Quiz Generator</h1>
+            <p>4000+ real questions from Open Trivia Database</p>
+            <div class="free-badge"><i class="fas fa-check-circle"></i> 100% Free · No API Key · No Limit</div>
+
+            <div class="form-group">
+                <label>📚 Select Category</label>
+                <div class="category-grid">
+                    <button class="cat-btn active" data-id="18" onclick="selectCategory(this)">💻 Computer Science</button>
+                    <button class="cat-btn" data-id="19" onclick="selectCategory(this)">🔢 Mathematics</button>
+                    <button class="cat-btn" data-id="17" onclick="selectCategory(this)">🔬 Science & Nature</button>
+                    <button class="cat-btn" data-id="30" onclick="selectCategory(this)">⚗️ Gadgets & Tech</button>
+                    <button class="cat-btn" data-id="9"  onclick="selectCategory(this)">🌍 General Knowledge</button>
+                    <button class="cat-btn" data-id="23" onclick="selectCategory(this)">📜 History</button>
+                    <button class="cat-btn" data-id="27" onclick="selectCategory(this)">🐾 Animals</button>
+                    <button class="cat-btn" data-id="22" onclick="selectCategory(this)">🌐 Geography</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>⚡ Difficulty Level</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>🔢 Number of Questions</label>
+                <select id="numQuestions">
+                    <option value="5">5 Questions</option>
+                    <option value="10" selected>10 Questions</option>
+                    <option value="15">15 Questions</option>
+                    <option value="20">20 Questions</option>
+                </select>
+            </div>
+
+            <button class="generate-btn" id="generateBtn" onclick="generateQuiz()">
+                <i class="fas fa-magic"></i> Generate Quiz
+            </button>
+        </div>
+
+        <div id="loadingBox" style="display:none;" class="loading-box">
+            <div class="api-badge"><i class="fas fa-database"></i> Open Trivia DB</div>
+            <div class="spinner"></div>
+            <p id="loadingMsg">Fetching questions...</p>
+        </div>
+
+        <div id="errorBox" style="display:none;" class="error-box">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>Error fetching quiz</strong>
+                <p id="errorMsg" style="margin-top:4px; font-size:14px;"></p>
+            </div>
+        </div>
+
+        <div id="quizArea"></div>
+    </main>
+</div>
+<button class="mobile-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+
+<script>
+    document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('active');
+    });
+
+    let selectedCategoryId = 18;
+    let selectedCategoryName = 'Computer Science';
+    let currentQuestions = [];
+    let userAnswers = {};
+
+    function selectCategory(btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCategoryId = parseInt(btn.dataset.id);
+        selectedCategoryName = btn.textContent.trim().replace(/^[^\w]+ ?/, '');
+    }
+
+    function showLoading(msg) {
+        document.getElementById('loadingBox').style.display = 'block';
+        document.getElementById('loadingMsg').textContent = msg;
+        document.getElementById('errorBox').style.display = 'none';
+        document.getElementById('quizArea').innerHTML = '';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingBox').style.display = 'none';
+    }
+
+    function showError(msg) {
+        hideLoading();
+        document.getElementById('errorBox').style.display = 'flex';
+        document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function decodeHTML(str) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value;
+    }
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    async function generateQuiz() {
+        const difficulty = document.getElementById('difficulty').value;
+        const amount = document.getElementById('numQuestions').value;
+
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+
+        showLoading(`Fetching ${amount} ${difficulty} questions on ${selectedCategoryName}...`);
+        userAnswers = {};
+
+        // ✅ Open Trivia DB — Free, No API Key needed
+        const url = `https://opentdb.com/api.php?amount=${amount}&category=${selectedCategoryId}&difficulty=${difficulty}&type=multiple`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Network error: ${response.status}`);
+
+            const data = await response.json();
+
+            if (data.response_code === 1) throw new Error('Not enough questions for this category/difficulty. Please try different settings.');
+            if (data.response_code === 5) throw new Error('Too many requests! Please wait a few seconds and try again.');
+            if (data.response_code !== 0) throw new Error('Failed to fetch questions. Please try again.');
+
+            currentQuestions = data.results.map((q, i) => {
+                const correct = decodeHTML(q.correct_answer);
+                const allOptions = shuffle([correct, ...q.incorrect_answers.map(decodeHTML)]);
+                return {
+                    id: i,
+                    text: decodeHTML(q.question),
+                    options: allOptions,
+                    correct: allOptions.indexOf(correct)
+                };
+            });
+
+            hideLoading();
+            renderQuiz(selectedCategoryName, difficulty, currentQuestions);
+
+        } catch (err) {
+            showError(err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Quiz';
+        }
+    }
+
+    function renderQuiz(category, difficulty, questions) {
+        const area = document.getElementById('quizArea');
+        const labels = ['A', 'B', 'C', 'D'];
+        const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
+        let html = `
+            <div class="quiz-header">
+                <h2><i class="fas fa-brain"></i> ${category} Quiz</h2>
+                <div class="meta">
+                    <span><i class="fas fa-layer-group"></i> ${diffLabel}</span>
+                    <span><i class="fas fa-question-circle"></i> ${questions.length} Questions</span>
+                    <span><i class="fas fa-database"></i> Open Trivia DB</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+            </div>`;
+
+        questions.forEach((q, qi) => {
+            html += `
+                <div class="question-card" style="animation-delay:${qi * 0.06}s">
+                    <div class="question-num">Question ${qi + 1} of ${questions.length}</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="options" id="opts_${qi}">
+                        ${q.options.map((opt, oi) => `
+                            <label class="option-label" id="opt_${qi}_${oi}" onclick="selectAnswer(${qi}, ${oi})">
+                                <input type="radio" name="q${qi}" value="${oi}">
+                                <div class="option-circle">${labels[oi]}</div>
+                                <span>${opt}</span>
+                            </label>`).join('')}
+                    </div>
+                </div>`;
+        });
+
+        html += `<div class="submit-area"><button class="submit-btn" onclick="submitQuiz()"><i class="fas fa-paper-plane"></i> Submit Answers</button></div>`;
+        area.innerHTML = html;
+        area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function selectAnswer(qi, oi) {
+        document.querySelectorAll(`#opts_${qi} .option-label`).forEach(l => l.classList.remove('selected'));
+        document.getElementById(`opt_${qi}_${oi}`).classList.add('selected');
+        userAnswers[qi] = oi;
+        const pct = (Object.keys(userAnswers).length / currentQuestions.length) * 100;
+        const fill = document.getElementById('progressFill');
+        if (fill) fill.style.width = pct + '%';
+    }
+
+    function submitQuiz() {
+        const unanswered = currentQuestions.length - Object.keys(userAnswers).length;
+        if (unanswered > 0 && !confirm(`${unanswered} question(s) unanswered. Submit anyway?`)) return;
+
+        let score = 0;
+        currentQuestions.forEach((q, qi) => {
+            const selected = userAnswers[qi];
+            const optEls = document.querySelectorAll(`#opts_${qi} .option-label`);
+            optEls.forEach(el => el.classList.add('disabled'));
+            optEls[q.correct].classList.add('correct');
+            if (selected !== undefined) {
+                if (selected === q.correct) score++;
+                else optEls[selected].classList.add('wrong');
+            }
+        });
+
+        const pct = Math.round((score / currentQuestions.length) * 100);
+        const emoji = pct >= 80 ? '🎉' : pct >= 60 ? '👍' : pct >= 40 ? '📚' : '💪';
+        const msg = pct >= 80 ? 'Excellent work!' : pct >= 60 ? 'Good job! A little more practice.' : pct >= 40 ? 'Keep studying, you\'ll improve!' : 'Don\'t give up, practice makes perfect!';
+
+        document.getElementById('quizArea').insertAdjacentHTML('afterbegin', `
+            <div class="result-card">
+                <div class="score-circle">
+                    <span class="score-num">${score}</span>
+                    <span class="score-denom">/ ${currentQuestions.length}</span>
+                </div>
+                <h3>${emoji} ${pct}% Score</h3>
+                <p>${msg}</p>
+                <button class="retry-btn" onclick="retryQuiz()"><i class="fas fa-redo"></i> Try Another Quiz</button>
+            </div>`);
+
+        document.getElementById('quizArea').scrollIntoView({ behavior: 'smooth' });
+        const sa = document.querySelector('.submit-area');
+        if (sa) sa.style.display = 'none';
+    }
+
+    function retryQuiz() {
+        document.getElementById('quizArea').innerHTML = '';
+        document.getElementById('errorBox').style.display = 'none';
+        document.getElementById('generatorForm').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
